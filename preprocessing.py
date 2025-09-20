@@ -31,8 +31,9 @@ class MissingValueProcessor:
         colunas_na = {coluna: [] for coluna in self.dataset}
 
         for coluna in colunas:
+            print(coluna)
             for linha in range(self._pegar_total_linhas(coluna)):
-
+                print(self.dataset[coluna][linha])
 
         return colunas_na
 

@@ -1,10 +1,10 @@
 from preprocessing import MissingValueProcessor
 
 data = {
-    'coluna1': [1, 2, 3, None, 5],
-    'coluna2': [None, 2, 3, 4, 5],
-    'coluna3': [1, 2, 3, 4, None]
+    'idade': [20, 30, None, 50],
+    'salario': [500, None, 800, 1200],
+    'cidade': ['A', 'B', 'C', None]
 }
 
 processor = MissingValueProcessor(data)
-print(processor.isna(columns={'coluna1', 'coluna2', 'coluna3'}))
+print(processor.isna())
