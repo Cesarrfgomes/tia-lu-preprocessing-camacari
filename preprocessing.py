@@ -12,6 +12,9 @@ class MissingValueProcessor:
         """Retorna as colunas a serem processadas. Se 'columns' for vazio, retorna todas as colunas."""
         return list(columns) if columns else list(self.dataset.keys())
 
+    def _pegar_total_linhas(self, coluna):
+        return len(self.dataset[coluna])
+
     def isna(self, columns: Set[str] = None) -> Dict[str, List[Any]]:
         """
         Retorna um novo dataset contendo apenas as linhas que possuem
@@ -24,7 +27,14 @@ class MissingValueProcessor:
         Returns:
             Dict[str, List[Any]]: Um dicionário representando as linhas com valores nulos.
         """
-        pass
+        colunas = self._get_target_columns(columns)
+        colunas_na = {coluna: [] for coluna in self.dataset}
+
+        for coluna in colunas:
+            for linha in range(self._pegar_total_linhas(coluna)):
+
+
+        return colunas_na
 
     def notna(self, columns: Set[str] = None) -> Dict[str, List[Any]]:
         """
@@ -128,7 +138,7 @@ class Preprocessing:
     def __init__(self, dataset: Dict[str, List[Any]]):
         self.dataset = dataset
         self._validate_dataset_shape()
-        
+
         # Atributos compostos para cada tipo de tarefa
         self.statistics = Statistics(self.dataset)
         self.missing_values = MissingValueProcessor(self.dataset)
@@ -195,7 +205,7 @@ class Preprocessing:
         Args:
             columns (Set[str]): Colunas para aplicar a codificação.
             method (str): O método a ser usado: 'label' ou 'oneHot'.
-        
+
         Retorna 'self' para permitir encadeamento de métodos.
         """
         if not columns:
