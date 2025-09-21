@@ -13,7 +13,7 @@ class MissingValueProcessor:
         return list(columns) if columns else list(self.dataset.keys())
 
     def _pegar_total_linhas(self, coluna):
-        return len(self.dataset[coluna])
+        return len(self.dataset[next(iter(self.dataset))])
 
     def isna(self, columns: Set[str] = None) -> Dict[str, List[Any]]:
         """
@@ -30,10 +30,10 @@ class MissingValueProcessor:
         colunas = self._get_target_columns(columns)
         colunas_na = {coluna: [] for coluna in self.dataset}
 
-        for coluna in colunas:
-            print(coluna)
-            for linha in range(self._pegar_total_linhas(coluna)):
-                print(self.dataset[coluna][linha])
+        for linha in range(self._pegar_total_linhas(self.dataset)):
+            if any(self.dataset[coluna][linha] is None for coluna in colunas):
+                for coluna in colunas:
+                    colunas_na[coluna].append(self.dataset[coluna][linha])
 
         return colunas_na
 
@@ -49,7 +49,15 @@ class MissingValueProcessor:
         Returns:
             Dict[str, List[Any]]: Um dicionário representando as linhas sem valores nulos.
         """
-        pass
+        colunas = self._get_target_columns(columns)
+        colunas_notna = {coluna: [] for coluna in self.dataset}
+
+        for linha in range(self._pegar_total_linhas(self.dataset)):
+            if all(self.dataset[coluna][linha] is not None for coluna in colunas):
+                for coluna in colunas:
+                    colunas_notna[coluna].append(self.dataset[coluna][linha])
+
+        return colunas_notna
 
     def fillna(self, columns: Set[str] = None, method: str = 'mean', default_value: Any = 0):
         """
@@ -61,7 +69,31 @@ class MissingValueProcessor:
             method (str): 'mean', 'median', 'mode', ou 'default_value'.
             default_value (Any): Valor para usar com o método 'default_value'.
         """
-        pass
+        colunas = self._get_target_columns(columns)
+
+        if method == 'mode':
+            for coluna in colunas:
+                moda = Statistics(self.dataset).mode(coluna)
+                for i in range(self._pegar_total_linhas(self.dataset)):
+                    if self.dataset[coluna][i] is None:
+                        self.dataset[coluna][i] = moda[0]
+        elif method == 'mean':
+            for coluna in colunas:
+                media = Statistics(self.dataset).mean(coluna)
+                for i in range(self._pegar_total_linhas(self.dataset)):
+                    if self.dataset[coluna][i] is None:
+                        self.dataset[coluna][i] = round(media, 7)
+        elif method == 'median':
+            for coluna in colunas:
+                mediana = Statistics(self.dataset).median(coluna)
+                for i in range(self._pegar_total_linhas(self.dataset)):
+                    if self.dataset[coluna][i] is None:
+                        self.dataset[coluna][i] = round(mediana, 7)
+        elif method == 'default_value':
+            for coluna in colunas:
+                for i in range(self._pegar_total_linhas(self.dataset)):
+                    if self.dataset[coluna][i] is None:
+                        self.dataset[coluna][i] = default_value
 
     def dropna(self, columns: Set[str] = None):
         """
@@ -71,8 +103,8 @@ class MissingValueProcessor:
         Args:
             columns (Set[str]): Colunas a serem verificadas para valores nulos. Se vazio, todas as colunas são verificadas.
         """
-        pass
 
+        self.dataset = self.notna(columns)
 
 class Scaler:
     """
