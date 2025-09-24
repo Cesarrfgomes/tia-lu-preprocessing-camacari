@@ -183,7 +183,15 @@ class Preprocessing:
         Valida se todas as listas (colunas) no dicionário do dataset
         têm o mesmo comprimento.
         """
-        pass
+        comprimentos = [len(column) for column in self.dataset.values()]
+
+        """Essa linha de baixo serve para, caso a len(set(comprimentos)) retorne mais de um valor, 
+        siginifica que alguma coluna tem mais valor que outra, pois a varialvel comprimentos 
+        já está lendo os tamanhos das colunas, portanto se removermos os valores duplicados e 
+        calcularmos o tamanho tem que dar 1, caso contrário, siginifica que alguma coluna tem mais 
+        valor que outra"""
+        if len(set(comprimentos)) != 1:
+            raise ValueError ("As colunas tem comprimentos diferentes")
 
     def isna(self, columns: Set[str] = None) -> Dict[str, List[Any]]:
         """
