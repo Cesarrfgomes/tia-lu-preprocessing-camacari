@@ -151,7 +151,14 @@ class Encoder:
         Args:
             columns (Set[str]): Colunas categóricas para codificar.
         """
-        pass
+
+        total_linhas = MissingValueProcessor(self.dataset)._pegar_total_linhas(self.dataset)
+
+        for coluna in columns:
+            set_valores = Statistics(self.dataset).itemset(coluna)
+            for i in range(total_linhas):
+                if self.dataset[coluna][i] in set_valores:
+                    self.dataset[coluna][i] = list(sorted(set_valores)).index(self.dataset[coluna][i])
 
     def oneHot_encode(self, columns: Set[str]):
         """
