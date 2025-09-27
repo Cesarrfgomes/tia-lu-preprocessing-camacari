@@ -128,6 +128,12 @@ class Scaler:
         return columns
 
 
+    def filtrar_numericos(self, values):
+        return [v for v in values if self._is_numeric(v)]
+
+    def coluna_constante(self, values):
+        return [0.0 if self._is_numeric(v) else v for v in values]
+
     def standard_scaler(self, columns=None):
         """
         Aplica o Z-score normalization: (x - mean) / std
@@ -142,8 +148,7 @@ class Scaler:
             if not isinstance(values, list):
                 continue
 
-            # Filtra apenas numéricos
-            numeric_vals = [v for v in values if self._is_numeric(v)]
+            numeric_vals = self.filtrar_numericos(values)
             if not numeric_vals:
                 continue
 
@@ -151,8 +156,7 @@ class Scaler:
             stdev_val = self.stats.stdev(col)
 
             if stdev_val == 0:
-                # Coluna constante -> todos viram 0.0
-                scaled = [0.0 if self._is_numeric(v) else v for v in values]
+                scaled = self.coluna_constante(values)
             else:
                 scaled = [
                     (float(v) - mean_val) / stdev_val if self._is_numeric(v) else v
@@ -161,7 +165,7 @@ class Scaler:
 
             self.dataset[col] = scaled
 
-    def minmax_scaler(self, columns=None):
+    def minMax_scaler(self, columns=None):
         """
         Aplica a normalização Min-Max: (x - min) / (max - min)
         """
@@ -175,8 +179,7 @@ class Scaler:
             if not isinstance(values, list):
                 continue
 
-            # Filtra apenas numéricos
-            numeric_vals = [v for v in values if self._is_numeric(v)]
+            numeric_vals = self.filtrar_numericos(values)
             if not numeric_vals:
                 continue
 
@@ -184,8 +187,7 @@ class Scaler:
             max_v = max(numeric_vals)
 
             if max_v == min_v:
-                # Coluna constante -> todos viram 0.0
-                scaled = [0.0 if self._is_numeric(v) else v for v in values]
+                scaled = self.coluna_constante(values)
             else:
                 scaled = [
                     (float(v) - min_v) / (max_v - min_v) if self._is_numeric(v) else v
@@ -250,10 +252,10 @@ class Preprocessing:
         """
         comprimentos = [len(column) for column in self.dataset.values()]
 
-        """Essa linha de baixo serve para, caso a len(set(comprimentos)) retorne mais de um valor, 
-        siginifica que alguma coluna tem mais valor que outra, pois a varialvel comprimentos 
-        já está lendo os tamanhos das colunas, portanto se removermos os valores duplicados e 
-        calcularmos o tamanho tem que dar 1, caso contrário, siginifica que alguma coluna tem mais 
+        """Essa linha de baixo serve para, caso a len(set(comprimentos)) retorne mais de um valor,
+        siginifica que alguma coluna tem mais valor que outra, pois a varialvel comprimentos
+        já está lendo os tamanhos das colunas, portanto se removermos os valores duplicados e
+        calcularmos o tamanho tem que dar 1, caso contrário, siginifica que alguma coluna tem mais
         valor que outra"""
         if len(set(comprimentos)) != 1:
             raise ValueError ("As colunas tem comprimentos diferentes")

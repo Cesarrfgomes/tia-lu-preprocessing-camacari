@@ -137,17 +137,14 @@ class Statistics:
         if not valores_coluna:
             return []
 
-        contador = {}
-        for valor in valores_coluna:
-            if valor in contador:
-                contador[valor] += 1
-            else:
-                contador[valor] = 1
 
-        numero_maximo_repeticoes = max(contador.values())
+
+        frequencia = self.absolute_frequency(column)
+
+        numero_maximo_repeticoes = max(frequencia.values())
 
         modas = []
-        for chave, valor in contador.items():
+        for chave, valor in frequencia.items():
             if(valor == numero_maximo_repeticoes):
                 modas.append(chave)
 
