@@ -108,33 +108,91 @@ class MissingValueProcessor:
 
 class Scaler:
     """
-    Aplica transformações de escala em colunas numéricas do dataset.
+    Classe para aplicar técnicas de escalonamento em colunas numéricas do dataset.
+    - Preserva valores não numéricos (strings, None, bool).
+    - Caso haja coluna constante, todos os valores numéricos viram 0.0.
     """
-    def __init__(self, dataset: Dict[str, List[Any]]):
+
+    def __init__(self, dataset):
         self.dataset = dataset
+        self.stats = Statistics(dataset)
 
-    def _get_target_columns(self, columns: Set[str]) -> List[str]:
-        return list(columns) if columns else list(self.dataset.keys())
+    def _is_numeric(self, value):
+        """Verifica se o valor é numérico (int ou float)."""
+        return isinstance(value, (int, float))
 
-    def minMax_scaler(self, columns: Set[str] = None):
+    def _get_target_columns(self, columns):
+        """Define quais colunas aplicar o escalonamento (todas se None)."""
+        if columns is None:
+            return list(self.dataset.keys())
+        return columns
+
+
+    def standard_scaler(self, columns=None):
         """
-        Aplica a normalização Min-Max ($X_{norm} = \frac{X - X_{min}}{X_{max} - X_{min}}$)
-        nas colunas especificadas. Modifica o dataset.
-
-        Args:
-            columns (Set[str]): Colunas para aplicar o scaler. Se vazio, tenta aplicar a todas.
+        Aplica o Z-score normalization: (x - mean) / std
         """
-        pass
+        targets = self._get_target_columns(columns)
 
-    def standard_scaler(self, columns: Set[str] = None):
-        """
-        Aplica a padronização Z-score ($X_{std} = \frac{X - \mu}{\sigma}$)
-        nas colunas especificadas. Modifica o dataset.
+        for col in targets:
+            if col not in self.dataset:
+                continue
 
-        Args:
-            columns (Set[str]): Colunas para aplicar o scaler. Se vazio, tenta aplicar a todas.
+            values = self.dataset[col]
+            if not isinstance(values, list):
+                continue
+
+            # Filtra apenas numéricos
+            numeric_vals = [v for v in values if self._is_numeric(v)]
+            if not numeric_vals:
+                continue
+
+            mean_val = self.stats.mean(col)
+            stdev_val = self.stats.stdev(col)
+
+            if stdev_val == 0:
+                # Coluna constante -> todos viram 0.0
+                scaled = [0.0 if self._is_numeric(v) else v for v in values]
+            else:
+                scaled = [
+                    (float(v) - mean_val) / stdev_val if self._is_numeric(v) else v
+                    for v in values
+                ]
+
+            self.dataset[col] = scaled
+
+    def minmax_scaler(self, columns=None):
         """
-        pass
+        Aplica a normalização Min-Max: (x - min) / (max - min)
+        """
+        targets = self._get_target_columns(columns)
+
+        for col in targets:
+            if col not in self.dataset:
+                continue
+
+            values = self.dataset[col]
+            if not isinstance(values, list):
+                continue
+
+            # Filtra apenas numéricos
+            numeric_vals = [v for v in values if self._is_numeric(v)]
+            if not numeric_vals:
+                continue
+
+            min_v = min(numeric_vals)
+            max_v = max(numeric_vals)
+
+            if max_v == min_v:
+                # Coluna constante -> todos viram 0.0
+                scaled = [0.0 if self._is_numeric(v) else v for v in values]
+            else:
+                scaled = [
+                    (float(v) - min_v) / (max_v - min_v) if self._is_numeric(v) else v
+                    for v in values
+                ]
+
+            self.dataset[col] = scaled
 
 class Encoder:
     """
