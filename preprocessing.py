@@ -219,27 +219,17 @@ class Encoder:
             for i in range(total_linhas):
                 if self.dataset[coluna][i] in set_valores:
                     self.dataset[coluna][i] = list(sorted(set_valores)).index(self.dataset[coluna][i])
-        
+
     def oneHot_encode(self, columns: Set[str]):
-            for column in columns:
-                valores = self.dataset[column]
+        """
+        Cria novas colunas binárias para cada categoria nas colunas especificadas (One-Hot Encoding).
+        Modifica o dataset adicionando e removendo colunas.
 
-                # valores únicos com set duplica a quantidade de elemento na coluna
-                # valores_unicos = set(valores)
-                valores_unicos = list(dict.fromkeys(valores))
+        Args:
+            columns (Set[str]): Colunas categóricas para codificar.
+        """
+        pass
 
-                for valor in valores_unicos:
-                    novacoluna = f"{column}_{valor}"
-                    nova_coluna_valores = []
-                    for item in valores:
-                        if item == valor:
-                            nova_coluna_valores.append(1)
-                        else:
-                            nova_coluna_valores.append(0)
-
-                    self.dataset[novacoluna] = nova_coluna_valores
-
-                del self.dataset[column]
 
 class Preprocessing:
     """
